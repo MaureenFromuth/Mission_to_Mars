@@ -16,10 +16,10 @@ def scrape_all():
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
         "last_modified": dt.datetime.now(),
-        "hemisphere_images": hemisphere_image(browser) 
+        "hemispheres": hemisphere_image(browser) 
     }
     # Stop webdriver and return data
-    sys.setrecursionlimit(1500)
+    sys.setrecursionlimit(2000)
     browser.quit()
     return data
 
@@ -79,7 +79,7 @@ def mars_facts():
     return df.to_html(classes="table table-striped")
 
 def hemisphere_image(browser):
-    sys.setrecursionlimit(1500)
+    sys.setrecursionlimit(2000)
     # Visit the URL
     url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
     browser.visit(url)
@@ -94,24 +94,32 @@ def hemisphere_image(browser):
     hemi_images = hemi_image_soup.find_all("div", class_='item')
     for h in hemi_images:
         # Create a dictionary for responses
-        hemisphere_dict = {}
+        hemispheres = {}
+        
         # Find the links that get us to the hemisphere page
         href = h.find('a', class_='itemLink product-item')    
         link = base_url + href['href']
         browser.visit(link)
+        
         # Repeate the original step to access the html of the new website
         hemi_site_html = browser.html
         hemi_site_soup = soup(hemi_site_html, 'html.parser')
+        
         # Identify the title of the image by searching out the h2 title and removing the text
         img_title = hemi_site_soup.find('div', class_='content').find('h2', class_='title').text
+        
         #Assign the 'image_title' variable to the 'title' key in the 'hemisphere' dictionary
-        hemisphere_dict['title'] = img_title
+        hemispheres['title'] = img_title
+        
         # Identify the url of the image by searching out the downloads class and removing the href
         img_url = hemi_site_soup.find('div', class_='downloads').find('a')['href']
+    
         #Assign the 'image_url' variable to the 'url_img' key in the 'hemisphere' dictionary
-        hemisphere_dict['url_img'] = img_url
+        hemispheres['url_img'] = img_url
+        
         # Append dictionary to list
-        hemisphere_image_urls.append(hemisphere_dict)
+        hemisphere_image_urls.append(hemispheres)
+        
     return hemisphere_image_urls
 
 if __name__ == "__main__":
